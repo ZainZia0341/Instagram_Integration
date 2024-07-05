@@ -1,0 +1,42 @@
+service: InstagramIntegration
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.11
+  profile: default
+  environment:
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+    ACCESS_TOKEN: ${env:ACCESS_TOKEN}
+    VERIFY_TOKEN: ${env:VERIFY_TOKEN}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "*"
+
+plugins:
+  - serverless-python-requirements
+  - serverless-dotenv-plugin
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+package:
+  exclude:
+    - "**/*"
+  include:
+    - "*.py"
+
+functions:
+  webhookHandler:
+    handler: handler.InstaHandler
+    events:
+      - http:
+          path: /webhook
+          method: any
